@@ -1,3 +1,4 @@
+import string
 
 prep = ['a', 
 	'ante', 
@@ -12,7 +13,6 @@ prep = ['a',
 	'para', 
 	'por', 
 	'perante', 
-	'sem', 
 	'sob', 
 	'sobre', 
 	'trás',
@@ -20,8 +20,12 @@ prep = ['a',
 	'aquele',
 	'duma',
 	'disto',
+	'na',
 	'nas',
 	'num',
+	'numa',
+	'nuns',
+	'numas',
 	'nessa',
 	'pelo',
 	'pelas',
@@ -29,6 +33,7 @@ prep = ['a',
 	'o',
 	'as',
 	'os',
+	'ao',
 	'do',
 	'da',
 	'dos',
@@ -41,13 +46,27 @@ prep = ['a',
 	')',
 	'é',
 	'e',
-	'um'
+	'um',
+	'no',
+	'que'
 ]
 
 def tagfy(title):
+	tagfied = []
+	
+	title = title.lower()
+	title = strip_punctuation(title)
+	
 	terms = title.split(" ")
-	cmp(prep, terms)
 
-	#TODO: Terminar o tagfy!!!!!!
+	for term in terms:
+		if not (term in prep):
+			tagfied.append(term)
+	
+	return tagfied
 
-tagfy("esse é um texto de teste")
+	
+def strip_punctuation(s):
+    return ''.join(c for c in s if c not in string.punctuation)
+
+
