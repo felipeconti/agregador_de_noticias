@@ -38,11 +38,9 @@ def crawlerGlobo():
 			article.download()
 			article.parse()
 			print("Data de publicacao: ", article.publish_date)
-			#print("Autores: ", article.authors)
 			print("Titulo: ", article.title)
 			print("Link: ", newsurl)
 			print("")
-			#article.text
 
 			db.insertNews(article.publish_date, 
 					newsurl,
@@ -55,3 +53,5 @@ def crawlerGlobo():
 				])
 
 		print('---------------------------------------------')
+	
+	db.closeConn()
