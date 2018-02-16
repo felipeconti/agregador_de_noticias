@@ -1,10 +1,12 @@
 import psycopg2
+from datetime import datetime
 
 class postgres:
 	error    = 0
 	conn     = None
 	cur      = None
 	commited = 0
+	now = datetime.now()
 
 	def connect(self):
 		try:
@@ -19,6 +21,8 @@ class postgres:
 
 	def insertNews(self, data):
 		for raw in data:
+			if data[0] == None:
+				data[0] = str(self.now.year) + '-' + str(self.now.month) + '-' + str(self.now.day)
 			self.cur.execute("INSERT INTO news VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s)",
 							(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]))
 

@@ -5,20 +5,25 @@ from newspaper import Article
 import requests
 from bs4 import BeautifulSoup as bs
 import re
+from postgres import postgres
+from tagfy import tagfy
 
-def crawlerUol():
-	urls = ['https://www.bloomberg.com.br/blog/'
+def crawlerBloomberg():
+	urls = [['https://www.bloomberg.com.br/blog/', 'economia']
 			]
+
+	db = postgres()
+	db.connect()
 
 	print('---------------------------------------------')
 	print("bloomberg.com.br")
 	print('---------------------------------------------')
 
 	for url in urls:
-		print("Endereço principal -> ", url)
+		print("Endereço principal -> ", url[0])
 		print("")
 
-		p = requests.get(url)
+		p = requests.get(url[0])
 		s = bs(p.content, 'html.parser')
 
 		newsurl = s.select('h2 a[href]')
@@ -33,6 +38,17 @@ def crawlerUol():
 			print("Link: ", newsurl)
 			print("")
 
+			db.insertNews([article.publish_date, 
+					newsurl,
+					url[0],
+					url[1],
+					article.title,
+					article.text,
+					article.authors,
+					tagfy(article.title)
+				])
+			db.commit()
+
+		db.closeConn()
 		print('---------------------------------------------')
 		
-crawlerUol()

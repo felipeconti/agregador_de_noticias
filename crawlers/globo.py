@@ -7,9 +7,6 @@ from bs4 import BeautifulSoup as bs
 from postgres import postgres
 from tagfy import tagfy
 
-data = []
-db = postgres.new()
-
 def crawlerGlobo():
 	urls = [['http://g1.globo.com/economia/', 'economia'],
 			['http://g1.globo.com/economia/negocios/', 'negocios'],
@@ -21,6 +18,7 @@ def crawlerGlobo():
 	print("Globo.com")
 	print('---------------------------------------------')
 
+	db = postgres()
 	db.connect()
 
 	for url in urls:
@@ -42,7 +40,7 @@ def crawlerGlobo():
 			print("Link: ", newsurl)
 			print("")
 
-			db.insertNews(article.publish_date, 
+			db.insertNews([article.publish_date, 
 					newsurl,
 					url[0],
 					url[1],
@@ -51,6 +49,7 @@ def crawlerGlobo():
 					article.authors,
 					tagfy(article.title)
 				])
+			db.commit()
 
 		print('---------------------------------------------')
 	
