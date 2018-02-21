@@ -21,10 +21,10 @@ class postgres:
 
 	def insertNews(self, data):
 		for raw in data:
-			if data[0] == None:
-				data[0] = str(self.now.year) + '-' + str(self.now.month) + '-' + str(self.now.day)
+			if raw[0] == None:
+				raw[0] = str(self.now.year) + '-' + str(self.now.month) + '-' + str(self.now.day)
 			self.cur.execute("INSERT INTO news VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s)",
-							(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]))
+							(raw[0], raw[1], raw[2], raw[3], raw[4], raw[5], raw[6], raw[7]))
 
 	def commit(self):
 		self.conn.commit()
