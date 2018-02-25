@@ -4,9 +4,9 @@ sys.path.append('../newspaper')
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup as bs
-from postgres import postgres
 from tagfy import tagfy
 from crawler import crawler
+from newslog import crawlerlog
 
 class crawlerGlobo(crawler):
 	
@@ -17,6 +17,9 @@ class crawlerGlobo(crawler):
 		for url in self.urls:
 			print("Endereço principal -> ", url[0])
 			print("")
+
+			crLog = crawlerlog()
+			crLog.openFile("log/globo/"+url[1]+"log.txt")
 
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
@@ -33,25 +36,27 @@ class crawlerGlobo(crawler):
 				print("Link: ", newsurl)
 				print("")
 
-				self.db.insertNews([[article.publish_date, 
-									newsurl,
-									url[0],
-									url[1],
-									article.title,
-									article.text,
-									article.authors,
-									tagfy(article.title)
-								]])
-				self.db.commit()
+				if not crLog.oldNews(article.title):
+					self.save([article.publish_date, 
+										newsurl,
+										url[0],
+										url[1],
+										article.title,
+										article.text,
+										article.authors,
+										tagfy(article.title),
+										"globo"
+									])
+			crLog.closeFile()
 
 
-	def run(self, db):
+	def run(self):
 
 		urls = [['http://g1.globo.com/economia/', 'economia'],
-				['http://g1.globo.com/economia/negocios/', 'negocios'],
-				['http://g1.globo.com/economia/agronegocios/', 'agronegocios'],
-				['http://g1.globo.com/politica/', 'politica']
-				]
+										['http://g1.globo.com/economia/negocios/', 'negocios'],
+										['http://g1.globo.com/economia/agronegocios/', 'agronegocios'],
+										['http://g1.globo.com/politica/', 'politica']
+										]
 
 		self.setUrl(urls)
 
@@ -59,10 +64,7 @@ class crawlerGlobo(crawler):
 		print("Globo.com")
 		print('---------------------------------------------')
 
-		self.setConnection(db)
-		self.connect()
 		self.proccess()
+		self.commit()
 
 		print('---------------------------------------------')
-		
-		self.desconnect()

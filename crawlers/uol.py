@@ -5,9 +5,9 @@ from newspaper import Article
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from postgres import postgres
 from tagfy import tagfy
 from crawler import crawler
+from newslog import crawlerlog
 
 class crawlerUol(crawler):
 
@@ -19,6 +19,9 @@ class crawlerUol(crawler):
 		for url in self.urls:
 			print("Endereço principal -> ", url[0])
 			print("")
+
+			crLog = crawlerlog()
+			crLog.openFile("log/uol/"+url[1]+"log.txt")
 
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
@@ -33,35 +36,35 @@ class crawlerUol(crawler):
 					article.download()
 					article.parse()
 					print("Data de publicacao: ", article.publish_date)
-					#print("Autores: ", article.authors)
 					print("Titulo: ", article.title)
 					print("Link: ", newsurl)
 					print("")
-					#article.text
 					
-					self.db.insertNews([[article.publish_date, 
-										newsurl,
-										url[0],
-										url[1],
-										article.title,
-										article.text,
-										article.authors,
-										tagfy(article.title)
-										]])
-					self.db.commit()
+					if not crLog.oldNews(article.title):
+						self.save([article.publish_date, 
+											newsurl,
+											url[0],
+											url[1],
+											article.title,
+											article.text,
+											article.authors,
+											tagfy(article.title),
+											"uol"
+											])
+			crLog.closeFile()
 
 
 
-	def run(self, db):
+	def run(self):
 
-		urls = [['https://economia.uol.com.br/noticias/afp/', 'economia'],
-				['https://economia.uol.com.br/noticias/ansa/', 'economia'],
-				['https://economia.uol.com.br/noticias/bbc/', 'economia'],
-				['https://economia.uol.com.br/noticias/bloomberg/', 'economia'],
-				['https://economia.uol.com.br/noticias/estadao-conteudo/', 'economia'],
-				['https://economia.uol.com.br/noticias/EFE/', 'economia'],
-				['https://economia.uol.com.br/noticias/reuters/', 'economia'],
-				['https://economia.uol.com.br/noticias/valor-online/', 'economia']
+		urls = [['https://economia.uol.com.br/noticias/afp/', 'afp'],
+				['https://economia.uol.com.br/noticias/ansa/', 'ansa'],
+				['https://economia.uol.com.br/noticias/bbc/', 'bbc'],
+				['https://economia.uol.com.br/noticias/bloomberg/', 'bloomberg'],
+				['https://economia.uol.com.br/noticias/estadao-conteudo/', 'estadao'],
+				['https://economia.uol.com.br/noticias/EFE/', 'efe'],
+				['https://economia.uol.com.br/noticias/reuters/', 'reuters'],
+				['https://economia.uol.com.br/noticias/valor-online/', 'valor']
 				]
 
 		self.setUrl(urls)
@@ -70,13 +73,11 @@ class crawlerUol(crawler):
 		print("uol.com.br")
 		print('---------------------------------------------')
 
-		self.setConnection(db)
-		self.connect()
 		self.proccess()
+		self.commit()
 		
 		print('---------------------------------------------')
 
-		self.desconnect()
 
 	
 

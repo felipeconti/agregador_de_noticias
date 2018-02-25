@@ -5,9 +5,9 @@ from newspaper import Article
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from postgres import postgres
 from tagfy import tagfy
 from crawler import crawler
+from newslog import crawlerlog
 
 class crawlerBloomberg(crawler):
 	
@@ -20,6 +20,9 @@ class crawlerBloomberg(crawler):
 			print("Endereço principal -> ", url[0])
 			print("")
 
+			crLog = crawlerlog()
+			crLog.openFile("log/bloomberg/"+url[1]+"log.txt")
+
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
 
@@ -29,25 +32,32 @@ class crawlerBloomberg(crawler):
 				newsurl = singlenews['href']
 				article = Article(newsurl)
 				article.download()
-				article.parse()
+				try:
+					article.parse()
+				except:
+					print(">>> FALHA NO DOWNLOAD DO LINK <<<")
+					print(newsurl)
+					continue
 				print("Data de publicacao: ", article.publish_date)
 				print("Titulo: ", article.title)
 				print("Link: ", newsurl)
 				print("")
 
-				self.db.insertNews([[article.publish_date, 
-									newsurl,
-									url[0],
-									url[1],
-									article.title,
-									article.text,
-									article.authors,
-									tagfy(article.title)
-								]])
-				self.db.commit()
+				if not crLog.oldNews(article.title):
+					self.save([article.publish_date, 
+										newsurl,
+										url[0],
+										url[1],
+										article.title,
+										article.text,
+										article.authors,
+										tagfy(article.title),
+										"bloomberg"
+									])
+			crLog.closeFile()
 
 
-	def run(self, db):
+	def run(self):
 
 		urls = [['https://www.bloomberg.com.br/blog/', 'economia']
 			]
@@ -58,12 +68,9 @@ class crawlerBloomberg(crawler):
 		print("bloomberg.com.br")
 		print('---------------------------------------------')
 
-		self.setConnection(db)
-		self.connect()
 		self.proccess()
+		self.commit()
 		
 		print('---------------------------------------------')
-
-		self.desconnect()
 
 	

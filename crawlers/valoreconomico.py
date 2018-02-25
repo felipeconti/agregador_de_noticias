@@ -5,9 +5,9 @@ from newspaper import Article
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from postgres import postgres
 from tagfy import tagfy
 from crawler import crawler
+from newslog import crawlerlog
 
 class crawlerValorEconomico(crawler):
 
@@ -19,37 +19,52 @@ class crawlerValorEconomico(crawler):
 			print("Endereço principal -> ", url[0])
 			print("")
 
+			crLog = crawlerlog()
+			crLog.openFile("log/valor/"+url[1]+"log.txt")
+			crLog.setNumOfNews(20)
+
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
 
 			links = s.find_all('h2', {'class':re.compile(r"^title" )})
-
+			
 			for link in links:
 				if len(link) > 0:
-					newsurl = link[0]['href']
+					aTag = link.find_all('a')
+					if len(aTag) > 0:
+						newsurl = aTag[0]['href']
+					else:
+						continue
+
 					article = Article(newsurl)
 					article.download()
-					article.parse()
+					try:
+						article.parse()
+					except:
+						print(">>> FALHA NO DOWNLOAD DO LINK <<<")
+						print(link)
+						continue
+
 					print("Data de publicacao: ", article.publish_date)
-					#print("Autores: ", article.authors)
 					print("Titulo: ", article.title)
 					print("Link: ", newsurl)
 					print("")
-					#article.text
 					
-					self.db.insertNews([[article.publish_date, 
-										newsurl,
-										url[0],
-										url[1],
-										article.title,
-										article.text,
-										article.authors,
-										tagfy(article.title)
-									]])
-					self.db.commit()
+					if not crLog.oldNews(article.title):
+						self.save([article.publish_date, 
+											newsurl,
+											url[0],
+											url[1],
+											article.title,
+											article.text,
+											article.authors,
+											tagfy(article.title),
+											"valoreconomico"
+										])
+			crLog.closeFile()
 
 
-	def run(self, db):
+	def run(self):
 		urls = [['http://www.valor.com.br/politica', 'politica'],
 				['http://www.valor.com.br/financas', 'financas'],
 				['http://www.valor.com.br/empresas', 'empresas'],
@@ -62,11 +77,9 @@ class crawlerValorEconomico(crawler):
 		print("valor.com.br")
 		print('---------------------------------------------')
 
-		self.setConnection(db)
-		self.connect()
 		self.proccess()
+		self.commit()
 		
 		print('---------------------------------------------')
 
-		self.desconnect()
 
