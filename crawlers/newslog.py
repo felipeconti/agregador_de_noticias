@@ -6,7 +6,7 @@ class crawlerlog():
 		self.file = None
 		self.text = ""
 		self.log = []
-		self.numOfNews = 10
+		self.numOfNews = 50
 
 	def setNumOfNews(self, numOfNews):
 		self.numOfNews = numOfNews

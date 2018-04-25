@@ -9,7 +9,7 @@ from tagfy import tagfy
 from crawler import crawler
 from newslog import crawlerlog
 
-class crawlerUol(crawler):
+class crawlerReuters(crawler):
 
 	def __init__(self):
 		crawler.__init__(self)
@@ -26,13 +26,13 @@ class crawlerUol(crawler):
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
 
-			newslist = s.find_all('div', {'class':'headlineMed standalone' )})
+			newslist = s.find_all('div', {'class':'headlineMed standalone' })
 
 			for singlenews in newslist:
 				link = singlenews.find_all('a')
 				if len(link) > 0:
 					newsurl = link[0]['href']
-					article = Article(newsurl)
+					article = Article("https://br.reuters.com"+newsurl)
 					article.download()
 					article.parse()
 					print("Data de publicacao: ", article.publish_date)

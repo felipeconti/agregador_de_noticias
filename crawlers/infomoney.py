@@ -8,8 +8,9 @@ import re
 from tagfy import tagfy
 from crawler import crawler
 from newslog import crawlerlog
+from datetime import datetime
 
-class crawlerUol(crawler):
+class crawlerInfomoney(crawler):
 
 	def __init__(self):
 		crawler.__init__(self)
@@ -26,29 +27,38 @@ class crawlerUol(crawler):
 			p = requests.get(url[0])
 			s = bs(p.content, 'html.parser')
 
-			newslist = s.find_all('a', {'class':'title-box title-box-medium' )})
+			newslist = s.find_all('a', {'class':'title-box title-box-medium' })
 
 			for singlenews in newslist:
-				newsurl = link[0]['href']
-				article = Article(newsurl)
+				newsurl = singlenews['href']
+				article = Article('http://www.infomoney.com.br'+newsurl)
 				article.download()
 				article.parse()
-				print("Data de publicacao: ", article.publish_date)
+
+				#Como não conseguia fazer o parser de data, faço na mão
+				date = s.find_all('input', {'id':'generatedAt'})
+				date = date[0]['value'].replace('/','-')
+				date = date+'+00:00'
+				datefinal = date[6:10]+'-'+date[3:5]+'-'+date[:2]+' 00:00:00.000'
+
+				print(datetime.strptime(datefinal, '%Y-%m-%d %H:%M:%S.%f'))
+
+				print("Data de publicacao: ", date)
 				print("Titulo: ", article.title)
 				print("Link: ", newsurl)
 				print("")
 				
 				if not crLog.oldNews(article.title):
-					self.save([article.publish_date, 
-										newsurl,
-										url[0],
-										url[1],
-										article.title,
-										article.text,
-										article.authors,
-										tagfy(article.title),
-										"infomoney"
-										])
+					self.save([datetime.strptime(datefinal, '%Y-%m-%d %H:%M:%S.%f'), 
+								newsurl,
+								url[0],
+								url[1],
+								article.title,
+								article.text,
+								article.authors,
+								tagfy(article.title),
+								"infomoney"
+								])
 			crLog.closeFile()
 
 	def run(self):

@@ -31,6 +31,7 @@ class crawlerGlobo(crawler):
 				article = Article(newsurl)
 				article.download()
 				article.parse()
+				print(type(article.publish_date))
 				print("Data de publicacao: ", article.publish_date)
 				print("Titulo: ", article.title)
 				print("Link: ", newsurl)
@@ -53,10 +54,10 @@ class crawlerGlobo(crawler):
 	def run(self):
 
 		urls = [['http://g1.globo.com/economia/', 'economia'],
-										['http://g1.globo.com/economia/negocios/', 'negocios'],
-										['http://g1.globo.com/economia/agronegocios/', 'agronegocios'],
-										['http://g1.globo.com/politica/', 'politica']
-										]
+				['http://g1.globo.com/economia/negocios/', 'negocios'],
+				['http://g1.globo.com/economia/agronegocios/', 'agronegocios'],
+				['http://g1.globo.com/politica/', 'politica']
+				]
 
 		self.setUrl(urls)
 
