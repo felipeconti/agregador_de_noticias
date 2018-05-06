@@ -4,7 +4,7 @@ from elasticsearch import helpers
 
 class esCrawler():
 	def __init__(self):
-		self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+		self.es = Elasticsearch([{'host': 'elasticsearch', 'port': 9200}])
 		self.news = []
 
 	def save(self, doc):
